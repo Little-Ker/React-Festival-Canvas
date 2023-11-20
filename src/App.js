@@ -6,6 +6,7 @@ import './App.css'
 import Navbar from 'component/navbar/Navbar'
 import ViewA from 'view/ViewA'
 import ViewB from 'view/ViewB'
+import Dialog from 'component/dialog'
  
 const RouterPage = () => {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Navbar />
         <RouterPage />
       </Router>
+      <Dialog />
     </div>
   )
 }
