@@ -74,7 +74,7 @@ const AlertDialog = (props) => {
               close()
             }}
           >
-            {('OK')}
+            {('確定')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -18,7 +18,7 @@ import styles from './confirmDialog.module.sass'
 const ConfirmDialog = (props) => {
   const { id, content,
     onConfirm, onCancel,
-    onOpen, onClose } = props
+    onOpen, onClose, title } = props
   const { closeDialog } = useDialogStackContext()
 
   const moduleTheme = {
@@ -71,7 +71,7 @@ const ConfirmDialog = (props) => {
         maxWidth="xl"
       >
         <DialogTitle className={styles.titleBlock}>
-          {('Confirm')}
+          {title}
         </DialogTitle>
         <DialogContent
           className={styles.contentBlock}
@@ -85,14 +85,14 @@ const ConfirmDialog = (props) => {
             className={styles.darkBtn}
             onClick={handleCancel}
           >
-            {('Cancel')}
+            {('取消')}
           </Button>
           <Button
             size="small"
             className={styles.lightBtn}
             onClick={handleConfirm}
           >
-            {('OK')}
+            {('確定')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -107,6 +107,7 @@ ConfirmDialog.propTypes = {
   onCancel: PropTypes.func,
   onClose: PropTypes.func,
   onOpen: PropTypes.func,
+  title: PropTypes.node,
 }
 
 export default ConfirmDialog

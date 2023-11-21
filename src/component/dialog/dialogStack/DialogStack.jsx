@@ -1,6 +1,4 @@
-import React, {
-  useEffect 
-} from 'react'
+import React from 'react'
 import useDialogStackContext from 'contexts/dialogStackContext'
 import AlertDialog from 'component/dialog/alertDialog'
 import ConfirmDialog from 'component/dialog/confirmDialog'
@@ -10,10 +8,6 @@ import styles from './dialogStack.module.sass'
 
 const DialogStack = () => {
   const { popDialogs } = useDialogStackContext()
-
-  useEffect(() => {
-    console.log('popDialogs', popDialogs)
-  }, [popDialogs])
 
   return (
     <div className={styles.root}>

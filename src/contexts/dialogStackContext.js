@@ -26,7 +26,7 @@ const useDialogStackContext = create(set => ({
     })
     return id
   },
-  openConfirm: (content, onConfirm, onCancel, handlers) => {
+  openConfirm: (title, content, onConfirm, onCancel, handlers) => {
     const id = uuid()
     const type = 'CONFIRM'
     const { onOpen = null, onClose = null } = handlers ? handlers : {}
@@ -34,6 +34,7 @@ const useDialogStackContext = create(set => ({
       const newDialog = {
         id,
         type,
+        title,
         content,
         onConfirm,
         onCancel,
