@@ -5,12 +5,15 @@ import {
   Link, useLocation  
 } from 'react-router-dom'
 
-const linkList = [
-  {name: 'ViewA',
-    to: '/viewA'},
-  {name: 'ViewB',
-    to: '/viewB'},
-]
+const linkList = [{
+  name: 'ViewA',
+  to: '/viewA',
+}, {name: 'ViewB',
+  to: '/viewB'},
+{name: 'canvas 小工具',
+  to: '/paintTool'},
+{name: '雪景',
+  to: '/snowView'}]
 
 export default function Navbar() {
   const location = useLocation()

@@ -6,6 +6,7 @@ import './App.css'
 import Navbar from 'component/navbar/Navbar'
 import ViewA from 'view/ViewA'
 import ViewB from 'view/ViewB'
+import PaintTool from 'view/paintTool'
 import Dialog from 'component/dialog'
  
 const RouterPage = () => {
@@ -14,6 +15,7 @@ const RouterPage = () => {
       <Route exact path="/" element={<ViewA/>} />
       <Route exact path="viewA" element={<ViewA/>} />
       <Route exact path="viewB" element={<ViewB/>} />
+      <Route exact path="paintTool" element={<PaintTool/>} />
       <Route path="*" element={<ViewA/>} />
     </Routes>
   )
