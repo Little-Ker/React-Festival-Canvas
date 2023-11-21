@@ -10,12 +10,18 @@ import {
 import {
   store 
 } from './store'
+import {
+  ThemeProvider 
+} from '@mui/material/styles'
+import globalTheme from 'styles/muiGlobalTheme'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
-  <Provider store={store}>
-    <App />
-  </Provider>
+  <ThemeProvider theme={globalTheme}>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </ThemeProvider>
 )
 
 reportWebVitals()

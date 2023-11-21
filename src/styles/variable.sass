@@ -1,9 +1,14 @@
 // 配色
+$mainColor: #575757
+
 $main-blue: #4CB6E0
 $main-light-pink-color: #F7EDE9
 $main-black-color: #5C5959
 $light-blue-color: #E8F1F4
 $brown-color: #968575
+
+:export
+  mainColor: $mainColor
 
 // 裝置大小
 $mobile-size: 576px
@@ -20,4 +25,4 @@ $s-mobile-size: 375px
 
 = s_mobile
   @media only screen and (max-width: $s-mobile-size)
-    @content 
+    @content
