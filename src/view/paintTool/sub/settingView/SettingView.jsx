@@ -6,7 +6,7 @@ import {
   TextField, Checkbox , FormControlLabel, Box, Button, Grid, Divider
 } from '@mui/material'
 import {
-  openAlert, openConfirm, closeDialogs, openForm
+  openAlert
 } from 'component/dialog'
 
 function SettingView(props) {
