@@ -29,7 +29,7 @@ const penIndex = 0
 const paintPenIndex = 1
 const shapeIndex = 2
 const createLineIndex = 3
-const createReactIndex = 4
+const createRectIndex = 4
 const createCircleIndex = 5
 const TextIndex = 6
 
@@ -136,7 +136,6 @@ function PaintTool() {
     let wh = window.innerHeight - 3
 
     if (!setting.isShowGrid) return
-    ctx.strokeStyle='rgba(255,255,255,0.4)'
     const gridWidth = setting.gridSize
     const gCount = ww / gridWidth
     ctx.beginPath()
@@ -146,7 +145,7 @@ function PaintTool() {
       ctx.moveTo(-ww, i * gridWidth)
       ctx.lineTo(ww, i * gridWidth)
     }
-    ctx.strokeStyle='rgba(255,255,255,0.4)'
+    ctx.strokeStyle='rgba(255,255,255,0.2)'
     ctx.stroke()
   }, [ctx, setting])
 
@@ -154,6 +153,12 @@ function PaintTool() {
     storyShapeAry.forEach((cur, index) => {
       ctx.strokeStyle = ((index + 1) === storyShapeAry.length) ? '#f00': '#fff'
       if (cur.type === 'rect') ctx.strokeRect(cur.x, cur.y, cur.width, cur.height)
+      if (cur.type === 'line') {
+        ctx.beginPath()
+        ctx.moveTo(cur.x, cur.y)
+        ctx.lineTo(cur.finalX, cur.finalY)
+        ctx.stroke() 
+      }
       if (cur.type === 'circle') {
         ctx.save()
         ctx.translate((cur.r / 4) * ((cur.getXDir) ? 1 : -1), (cur.r / 4) * ((cur.getYDir) ? 1 : -1))
@@ -198,41 +203,57 @@ function PaintTool() {
       setStoryPointCount(prev => prev + 1)
     }
 
-    // 矩形
-    if (useTool[createReactIndex] && !isMouseDown.current) {
-      isMouseDown.current = true
-      setStoryShapeAry((prev) => {
-        prev[storyShapeCount] = {
-          type: 'rect',
-          x: evt.x,
-          y: evt.y,
-          width: 10,
-          height: 10,
-        }
-        return prev
-      })
+    if (!isMouseDown.current) {
+      // 直線
+      if (useTool[createLineIndex]) {
+    
+        isMouseDown.current = true
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'line',
+            x: evt.x,
+            y: evt.y,
+            finalX: evt.x + 3,
+            finalY: evt.y + 3,
+          }
+          return prev
+        })
+      }
+      // 矩形
+      if (useTool[createRectIndex]) {
+        isMouseDown.current = true
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'rect',
+            x: evt.x,
+            y: evt.y,
+            width: 10,
+            height: 10,
+          }
+          return prev
+        })
+      }
+      // 圓形
+      if (useTool[createCircleIndex]) {
+        isMouseDown.current = true
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'circle',
+            x: evt.x,
+            y: evt.y,
+            r: 10,
+            getXDir: true,
+            getYDir: true,
+          }
+          return prev
+        })
+      }
     }
-
-    // 圓形
-    if (useTool[createCircleIndex] && !isMouseDown.current) {
-      isMouseDown.current = true
-      setStoryShapeAry((prev) => {
-        prev[storyShapeCount] = {
-          type: 'circle',
-          x: evt.x,
-          y: evt.y,
-          r: 10,
-          getXDir: true,
-          getYDir: true,
-        }
-        return prev
-      })
-    }
-  }, [useTool, isMouseDown.current, createReactIndex, storyShapeCount])
+  }, [useTool, isMouseDown.current, createRectIndex, storyShapeCount])
 
   const onMousemove = useCallback((evt) => {
     if (isMouseDown.current) {
-      if (useTool[createReactIndex]) {
+      if (useTool[createRectIndex]) {
         setStoryShapeAry((prev) => {
           prev[storyShapeCount] = {
             type: 'rect',
@@ -258,13 +279,24 @@ function PaintTool() {
           return prev
         })
       }
+      if (useTool[createLineIndex]) {
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'line',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            finalX: evt.x,
+            finalY: evt.y,
+          }
+          return prev
+        })
+      }
     }
-    
-  }, [isMouseDown.current, storyShapeCount, setStoryShapeAry])
+  }, [isMouseDown.current, storyShapeCount, setStoryShapeAry, useTool])
 
   const onMouseup = useCallback((evt) => {
     if (isMouseDown.current && useTool[shapeIndex]) {
-      if (useTool[createReactIndex]) {
+      if (useTool[createRectIndex]) {
         setStoryShapeAry((prev) => {
           const getWidth = evt.x - prev[storyShapeCount].x
           const getHeight = evt.y - prev[storyShapeCount].y
@@ -292,10 +324,22 @@ function PaintTool() {
           return prev
         })
       }
+      if (useTool[createLineIndex]) {
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'line',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            finalX: evt.x,
+            finalY: evt.y,
+          }
+          return prev
+        })
+      }
       setStoryShapeCount(prev => prev + 1)
       isMouseDown.current = false
     }
-  }, [useTool, createReactIndex, isMouseDown.current, storyShapeCount])
+  }, [useTool, createRectIndex, isMouseDown.current, storyShapeCount])
 
   useEffect(() => {
     if (!canvas) return
@@ -332,6 +376,7 @@ function PaintTool() {
   useEffect(() => {
     if (!ctx) return
     resizeCanvas()
+    // paint()
     setInterval(paint, 50)
   }, [ctx])
 
@@ -407,7 +452,7 @@ function PaintTool() {
                 <HorizontalRuleIcon fontSize="small" />
                 <p className={styles.btnText}>{'製作直線'}</p>
               </MenuItem>
-              <MenuItem onClick={() => onCreateShape(createReactIndex)} className={clsx(styles.toolBtn, useTool[createReactIndex] && styles.useCreate)}>
+              <MenuItem onClick={() => onCreateShape(createRectIndex)} className={clsx(styles.toolBtn, useTool[createRectIndex] && styles.useCreate)}>
                 <CropSquareIcon fontSize="small" />
                 <p className={styles.btnText}>{'製作矩形'}</p>
               </MenuItem>
