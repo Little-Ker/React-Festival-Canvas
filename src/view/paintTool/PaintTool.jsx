@@ -14,7 +14,9 @@ import {
 } from 'component/dialog'
 import InterestsIcon from '@mui/icons-material/Interests'
 import CallMissedIcon from '@mui/icons-material/CallMissed'
+import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import CreateIcon from '@mui/icons-material/Create'
+import TitleIcon from '@mui/icons-material/Title'
 import CropSquareIcon from '@mui/icons-material/CropSquare'
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye'
 import MenuList from '@mui/material/MenuList'
@@ -25,18 +27,19 @@ import clsx from 'clsx'
 
 const penIndex = 0
 const paintPenIndex = 1
-
 const shapeIndex = 2
-const createReactIndex = 3
-const createCircleIndex = 4
+const createLineIndex = 3
+const createReactIndex = 4
+const createCircleIndex = 5
+const TextIndex = 6
 
-const settingIndex = 5
+const settingIndex = 7
 
 function PaintTool() {
   const [canvas, setCanvas] = useState(null)
   const [ctx, setCtx] = useState(null)
 
-  const [useTool, setUseTool] = useState([false, false, false, false, false])
+  const [useTool, setUseTool] = useState([false, false, false, false, false, false, false])
 
   const [setting, setSetting] = useState({
     isShowGrid: true,
@@ -50,8 +53,8 @@ function PaintTool() {
   const [storyPointCount,  setStoryPointCount] = useState(0)
 
   // 形狀工具
-  const [storyShapeAry, storyStoryShapeAry] = useState([])
-  const [shapeCount,  setStoryShapeCount] = useState(0)
+  const [storyShapeAry, setStoryShapeAry] = useState([])
+  const [storyShapeCount,  setStoryShapeCount] = useState(0)
 
   const resizeCanvas = useCallback(() => {
     let ww = window.innerWidth - 3
@@ -75,17 +78,18 @@ function PaintTool() {
       })
       setStoryPointCount(0)
 
-      storyStoryShapeAry((prev) => {
-        for(let i = 0; i < shapeCount; i++) {
+      setStoryShapeAry((prev) => {
+        for(let i = 0; i < storyShapeCount; i++) {
           prev.pop()
         }
         return prev
       })
       setStoryShapeCount(0)
     })
-  }, [storyPointCount, shapeCount])
+  }, [storyPointCount, storyShapeCount])
 
-  const onPrevious = useCallback((storyAryFn, storyCountFn) => {
+  const onPrevious = useCallback((storyAryFn, storyCountFn, count) => {
+    if (count <= 0) return
     storyAryFn((prev) => {
       prev.pop()
       return prev
@@ -149,7 +153,15 @@ function PaintTool() {
   const drawShape = useCallback(() => {
     storyShapeAry.forEach((cur, index) => {
       ctx.strokeStyle = ((index + 1) === storyShapeAry.length) ? '#f00': '#fff'
-      ctx.strokeRect(cur.x, cur.y, cur.width, cur.height)
+      if (cur.type === 'rect') ctx.strokeRect(cur.x, cur.y, cur.width, cur.height)
+      if (cur.type === 'circle') {
+        ctx.save()
+        ctx.translate((cur.r / 4) * ((cur.getXDir) ? 1 : -1), (cur.r / 4) * ((cur.getYDir) ? 1 : -1))
+        ctx.beginPath()
+        ctx.arc(cur.x, cur.y, Math.abs(cur.r - (cur.r / 2)) / 2, 0, 2 * Math.PI)
+        ctx.stroke()
+        ctx.restore()
+      }
     })
   }, [ctx, storyShapeAry])
 
@@ -189,8 +201,9 @@ function PaintTool() {
     // 矩形
     if (useTool[createReactIndex] && !isMouseDown.current) {
       isMouseDown.current = true
-      storyStoryShapeAry((prev) => {
-        prev[shapeCount] = {
+      setStoryShapeAry((prev) => {
+        prev[storyShapeCount] = {
+          type: 'rect',
           x: evt.x,
           y: evt.y,
           width: 10,
@@ -199,39 +212,90 @@ function PaintTool() {
         return prev
       })
     }
-  }, [useTool, isMouseDown.current, createReactIndex, shapeCount])
+
+    // 圓形
+    if (useTool[createCircleIndex] && !isMouseDown.current) {
+      isMouseDown.current = true
+      setStoryShapeAry((prev) => {
+        prev[storyShapeCount] = {
+          type: 'circle',
+          x: evt.x,
+          y: evt.y,
+          r: 10,
+          getXDir: true,
+          getYDir: true,
+        }
+        return prev
+      })
+    }
+  }, [useTool, isMouseDown.current, createReactIndex, storyShapeCount])
 
   const onMousemove = useCallback((evt) => {
-    if (useTool[createReactIndex] && isMouseDown.current) {
-      storyStoryShapeAry((prev) => {
-        prev[shapeCount] = {
-          x: prev[shapeCount].x,
-          y: prev[shapeCount].y,
-          width: evt.x - prev[shapeCount].x,
-          height: evt.y - prev[shapeCount].y,
-        }
-        return prev
-      })
+    if (isMouseDown.current) {
+      if (useTool[createReactIndex]) {
+        setStoryShapeAry((prev) => {
+          prev[storyShapeCount] = {
+            type: 'rect',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            width: evt.x - prev[storyShapeCount].x,
+            height: evt.y - prev[storyShapeCount].y,
+          }
+          return prev
+        })
+      }
+      if (useTool[createCircleIndex]) {
+        setStoryShapeAry((prev) => {
+          const getR = Math.abs(evt.x - prev[storyShapeCount].x) + Math.abs(evt.x - prev[storyShapeCount].x)
+          prev[storyShapeCount] = {
+            type: 'circle',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            r: getR,
+            getXDir: (evt.x - prev[storyShapeCount].x) > 0,
+            getYDir: (evt.y - prev[storyShapeCount].y) > 0,
+          }
+          return prev
+        })
+      }
     }
-  }, [isMouseDown.current, shapeCount])
+    
+  }, [isMouseDown.current, storyShapeCount, setStoryShapeAry])
 
   const onMouseup = useCallback((evt) => {
-    if (useTool[createReactIndex] && isMouseDown.current) {
-      storyStoryShapeAry((prev) => {
-        prev[shapeCount] = {
-          x: prev[shapeCount].x,
-          y: prev[shapeCount].y,
-          width: ((evt.x - prev[shapeCount].x) > 10) ? evt.x - prev[shapeCount].x : 10,
-          height: ((evt.y - prev[shapeCount].y) > 10) ? evt.y - prev[shapeCount].y : 10,
-        }
-        return prev
-      })
-      setStoryShapeCount((prev) => {
-        return prev + 1
-      })
+    if (isMouseDown.current && useTool[shapeIndex]) {
+      if (useTool[createReactIndex]) {
+        setStoryShapeAry((prev) => {
+          const getWidth = evt.x - prev[storyShapeCount].x
+          const getHeight = evt.y - prev[storyShapeCount].y
+          prev[storyShapeCount] = {
+            type: 'rect',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            width: (Math.abs(getWidth) > 10) ? getWidth : 10,
+            height: (Math.abs(getHeight) > 10) ? getHeight : 10,
+          }
+          return prev
+        })
+      }
+      if (useTool[createCircleIndex]) {
+        setStoryShapeAry((prev) => {
+          const getR = Math.abs(evt.x - prev[storyShapeCount].x) + Math.abs(evt.x - prev[storyShapeCount].x)
+          prev[storyShapeCount] = {
+            type: 'circle',
+            x: prev[storyShapeCount].x,
+            y: prev[storyShapeCount].y,
+            r: (getR > 10) ? getR : 10,
+            getXDir: (evt.x - prev[storyShapeCount].x) > 0,
+            getYDir: (evt.y - prev[storyShapeCount].y) > 0,
+          }
+          return prev
+        })
+      }
+      setStoryShapeCount(prev => prev + 1)
       isMouseDown.current = false
     }
-  }, [useTool, createReactIndex, isMouseDown.current, shapeCount])
+  }, [useTool, createReactIndex, isMouseDown.current, storyShapeCount])
 
   useEffect(() => {
     if (!canvas) return
@@ -286,6 +350,7 @@ function PaintTool() {
   const onHandleClick = useCallback((index) => {
     const useToolAry = useTool.map(() => false)
     useToolAry[index] = true
+    if(index === shapeIndex) useToolAry[createLineIndex] = true
     setUseTool(useToolAry)
 
     if (settingIndex === index) {
@@ -317,7 +382,7 @@ function PaintTool() {
           </Tooltip>
           <Collapse in={useTool[penIndex]}>  
             <MenuList>
-              <MenuItem onClick={() => onPrevious(setStoryPointAry, setStoryPointCount)} className={styles.toolBtn}>
+              <MenuItem onClick={() => onPrevious(setStoryPointAry, setStoryPointCount, storyPointCount)} className={styles.toolBtn}>
                 <CallMissedIcon fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
@@ -337,9 +402,10 @@ function PaintTool() {
           </Tooltip>
           <Collapse in={useTool[shapeIndex]}>  
             <MenuList>
-              <MenuItem onClick={() => onPrevious(storyStoryShapeAry, setStoryShapeCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
-                <p className={styles.btnText}>{'上一步'}</p>
+              
+              <MenuItem onClick={() => onCreateShape(createLineIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
+                <HorizontalRuleIcon fontSize="small" />
+                <p className={styles.btnText}>{'製作直線'}</p>
               </MenuItem>
               <MenuItem onClick={() => onCreateShape(createReactIndex)} className={clsx(styles.toolBtn, useTool[createReactIndex] && styles.useCreate)}>
                 <CropSquareIcon fontSize="small" />
@@ -348,6 +414,35 @@ function PaintTool() {
               <MenuItem onClick={() => onCreateShape(createCircleIndex)} className={clsx(styles.toolBtn, useTool[createCircleIndex] && styles.useCreate)}>
                 <PanoramaFishEyeIcon fontSize="small" />
                 <p className={styles.btnText}>{'製作圓形'}</p>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={() => onPrevious(setStoryShapeAry, setStoryShapeCount, storyShapeCount)} className={styles.toolBtn}>
+                <CallMissedIcon fontSize="small" />
+                <p className={styles.btnText}>{'上一步'}</p>
+              </MenuItem>
+              <MenuItem onClick={onOpenPointCode} className={styles.toolBtn}>
+                <CodeIcon fontSize="small" />
+                <p className={styles.btnText}>{'轉成程式碼'}</p>
+              </MenuItem>
+              <Divider />
+            </MenuList >
+          </Collapse>
+        </div>
+        <div className={styles.tool}>
+          <Tooltip title={'文字'} placement="right">
+            <IconButton size="medium" onClick={() => onHandleClick(TextIndex)} className={clsx(useTool[TextIndex] && styles.use)}>
+              <TitleIcon />
+            </IconButton >
+          </Tooltip>
+          <Collapse in={useTool[TextIndex]}>  
+            <MenuList>
+              <MenuItem onClick={() => onPrevious(setStoryShapeAry, setStoryShapeCount, storyShapeCount)} className={styles.toolBtn}>
+                <CallMissedIcon fontSize="small" />
+                <p className={styles.btnText}>{'上一步'}</p>
+              </MenuItem>
+              <MenuItem onClick={onOpenPointCode} className={styles.toolBtn}>
+                <CodeIcon fontSize="small" />
+                <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
             </MenuList >
@@ -359,7 +454,7 @@ function PaintTool() {
               <HighlightOffIcon />
             </IconButton >
           </Tooltip>
-        </div>
+        </div>    
         <div className={styles.tool}>
           <Tooltip title={'設定'} placement="right">
             <IconButton size="medium"onClick={() => onHandleClick(settingIndex)} className={clsx(useTool[settingIndex] && styles.use)}>
