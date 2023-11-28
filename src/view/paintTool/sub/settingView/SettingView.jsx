@@ -33,7 +33,10 @@ function SettingView(props) {
   }, [isShowGrid, gridSize])
 
   return (
-    <Box sx={{padding: '1rem'}}>
+    <Box sx={
+      {padding: '1rem',
+        paddingBottom: '0'}
+    }>
       <Grid
         container
         spacing={2}
