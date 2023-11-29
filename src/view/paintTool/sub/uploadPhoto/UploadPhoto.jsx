@@ -9,7 +9,7 @@ import noPhoto from 'assets/images/noImage.jpg'
 import styles from './uploadPhoto.module.sass'
 
 function UploadPhoto(props) {
-  const {storyPhotoAry, setStoryPhotoAry, onCancel, onChooseImgIndex} = props
+  const {storyPhotoAry, setStoryPhotoAry, onCancel, onChooseImgIndex, setStoryPhotoCount} = props
   const [showImgSrc, setShowImgSrc] = useState(null)
   const [img, setImg] = useState(null)
   const [imgName, setImgName] = useState('')
@@ -46,6 +46,7 @@ function UploadPhoto(props) {
       return prev
     })
     onChooseImgIndex(storyPhotoAry.length - 1)
+    setStoryPhotoCount(prev => prev + 1)
     onCancel()
   }, [img])
 
@@ -94,6 +95,7 @@ UploadPhoto.propTypes = {
   setStoryPhotoAry: PropTypes.func,
   onCancel: PropTypes.func,
   onChooseImgIndex: PropTypes.func,
+  setStoryPhotoCount: PropTypes.func,
 }
 
 export default UploadPhoto
