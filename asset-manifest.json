@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/React-Festival-Canvas/static/css/main.44784d55.css",
+    "main.js": "/React-Festival-Canvas/static/js/main.78cc0956.js",
+    "static/js/787.d4aba7ab.chunk.js": "/React-Festival-Canvas/static/js/787.d4aba7ab.chunk.js",
+    "static/media/bg.jpg": "/React-Festival-Canvas/static/media/bg.7f4af5ea2ed646ef8525.jpg",
+    "static/media/tree1.svg": "/React-Festival-Canvas/static/media/tree1.80a76f44a16b287d4952a78482d32985.svg",
+    "static/media/noImage.jpg": "/React-Festival-Canvas/static/media/noImage.2efe78cdf6dbf909f571.jpg",
+    "index.html": "/React-Festival-Canvas/index.html",
+    "main.44784d55.css.map": "/React-Festival-Canvas/static/css/main.44784d55.css.map",
+    "main.78cc0956.js.map": "/React-Festival-Canvas/static/js/main.78cc0956.js.map",
+    "787.d4aba7ab.chunk.js.map": "/React-Festival-Canvas/static/js/787.d4aba7ab.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.44784d55.css",
+    "static/js/main.78cc0956.js"
+  ]
+}
