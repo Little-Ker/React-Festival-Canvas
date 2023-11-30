@@ -3,6 +3,10 @@ import React, {
 } from 'react'
 import styles from './paintTool.module.sass'
 import {
+  SketchPicker 
+} from 'react-color'
+import rgbHex from 'rgb-hex'
+import {
   Popper, ClickAwayListener, Collapse, Tooltip, IconButton, MenuList, MenuItem, Divider
 } from '@mui/material'
 import {
@@ -794,14 +798,9 @@ function PaintTool() {
           </Tooltip>
           <Popper open={openColorPick} anchorEl={anchorColorEl} disablePortal>
             <ClickAwayListener onClickAway={handleColorClose}>
-              <MenuList
-                className={styles.colorPicker}
-                sx={{display: 'flex'}}
-              >
-                {colorList.map(cur => (
-                  <MenuItem key={cur} style={{background: cur}} onClick={() => onClickColor(cur)} className={styles.pickerColor} />
-                ))}
-              </MenuList>
+              <div className={styles.colorPicker}>
+                <SketchPicker color={chooseColor} onChange={c => setChooseColor(`#${rgbHex(c.rgb.r, c.rgb.g, c.rgb.b, c.rgb.a)}`)} />
+              </div>
             </ClickAwayListener>
           </Popper>
         </div>   

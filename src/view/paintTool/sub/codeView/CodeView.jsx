@@ -24,18 +24,21 @@ function CodeView(props) {
       )}
       {(type === 'shape' && (
         <div className={styles.codeList}>
-          <p>{'ctx.strokeStyle = "#fff"'}</p>
           {([...codeAry].filter(cur => cur.type === 'rect').length > 0) && (
             <p>{'// 矩形'}</p>
           )}
-          {[...codeAry].filter(cur => cur.type === 'rect').map((cur, index) => 
-            <p key={index}>{`ctx.strokeRect(${cur.x}, ${cur.y}, ${cur.width}, ${cur.height})`}</p>
+          {[...codeAry].filter(cur => cur.type === 'rect').map((cur, index) =>
+            <div key={index}>
+              <p>{`ctx.strokeStyle = "${cur.color}"`}</p>
+              <p>{`ctx.strokeRect(${cur.x}, ${cur.y}, ${cur.width}, ${cur.height})`}</p>
+            </div>
           )}
           {([...codeAry].filter(cur => cur.type === 'circle').length > 0) && (
             <p>{'// 圓形'}</p>
           )}
           {[...codeAry].filter(cur => cur.type === 'circle').map((cur, index) => 
             <div key={index}>
+              <p>{`ctx.strokeStyle = "${cur.color}"`}</p>
               <p>{'ctx.save()'}</p>
               <div className={styles.marginLeft}>
                 <p>{`ctx.translate(${(cur.r / 4) * ((cur.getXDir) ? 1 : -1)}, ${(cur.r / 4) * ((cur.getYDir) ? 1 : -1)})`}</p>
@@ -51,6 +54,7 @@ function CodeView(props) {
           <p>{'ctx.beginPath()'}</p>
           {[...codeAry].filter(cur => cur.type === 'line').map((cur, index) => 
             <div key={index}>
+              <p>{`ctx.strokeStyle = "${cur.color}"`}</p>
               <p className={styles.marginLeft}>{`ctx.moveTo(${cur.x}, ${cur.y})`}</p>
               <p className={styles.marginLeft}>{`ctx.lineTo(${cur.finalX}, ${cur.finalY})`}</p>
             </div>
