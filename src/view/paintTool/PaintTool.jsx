@@ -2,31 +2,17 @@ import React, {
   useState, useCallback, useEffect, useRef, useMemo
 } from 'react'
 import styles from './paintTool.module.sass'
-import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
-import Collapse from '@mui/material/Collapse'
-import LinearScaleIcon from '@mui/icons-material/LinearScale'
-import CodeIcon from '@mui/icons-material/Code'
-import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import SettingsIcon from '@mui/icons-material/Settings'
+import {
+  Popper, ClickAwayListener, Collapse, Tooltip, IconButton, MenuList, MenuItem, Divider
+} from '@mui/material'
+import {
+  LinearScale, Code, HighlightOff, Settings, Interests, CallMissed, HorizontalRule, FormatSize, 
+  Draw, Title, CropSquare, PanoramaFishEye, ColorLens, InsertPhoto, AddPhotoAlternate, CleaningServices,
+  Crop
+} from '@mui/icons-material'
 import {
   openAlert, openConfirm, closeDialogs, openForm
 } from 'component/dialog'
-import InterestsIcon from '@mui/icons-material/Interests'
-import CallMissedIcon from '@mui/icons-material/CallMissed'
-import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
-import FormatSizeIcon from '@mui/icons-material/FormatSize'
-import DrawIcon from '@mui/icons-material/Draw'
-import TitleIcon from '@mui/icons-material/Title'
-import CropSquareIcon from '@mui/icons-material/CropSquare'
-import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye'
-import ColorLensIcon from '@mui/icons-material/ColorLens'
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto'
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import CropIcon from '@mui/icons-material/Crop'
-import MenuList from '@mui/material/MenuList'
-import MenuItem from '@mui/material/MenuItem'
-import Divider from '@mui/material/Divider'
 import SettingView from './sub/settingView'
 import CodeView from './sub/codeView'
 import UploadPhoto from './sub/uploadPhoto'
@@ -34,18 +20,19 @@ import clsx from 'clsx'
 
 const pointIndex = 0
 const penIndex = 1
-const shapeIndex = 2
-const createLineIndex = 3
-const createRectIndex = 4
-const createCircleIndex = 5
-const textIndex = 6
-const textSizeIndex = 7
-const textColorIndex = 8
-const photoIndex = 9
-const addPhotoIndex = 10
-const editPhotoIndex = 11
+const eraserIndex = 2
+const shapeIndex = 3
+const createLineIndex = 4
+const createRectIndex = 5
+const createCircleIndex = 6
+const textIndex = 7
+const textSizeIndex = 8
+const textColorIndex = 9
+const photoIndex = 10
+const addPhotoIndex = 11
+const editPhotoIndex = 12
 
-const settingIndex = 12
+const settingIndex = 13
 
 const titlesList = {
   pen: '繪筆',
@@ -58,6 +45,8 @@ const titlesList = {
 function PaintTool() {
   const [canvas, setCanvas] = useState(null)
   const [ctx, setCtx] = useState(null)
+  const [anchorColorEl, setAnchorColorEl] = useState(null)
+  const [openColorPick, setOpenColorPick] = useState(false)
 
   const defaultUseToolAry = useMemo(() => [...Array(settingIndex).keys()].map(() => false), [])
   const [useTool, setUseTool] = useState(defaultUseToolAry)
@@ -68,6 +57,8 @@ function PaintTool() {
   })
 
   const zoom = [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
+
+  const colorList = ['#f0f0f0', '#ff2222de', '#21b34d', '#0077ff', '#ffff2c', '#b22dff', '#00ccff', '#202020']
 
   const isMouseDown = useRef(false)
   const chooseImgIndex = useRef(null)
@@ -91,6 +82,9 @@ function PaintTool() {
   // 圖片工具
   const [storyPhotoAry, setStoryPhotoAry] = useState([])
   const [storyPhotoCount, setStoryPhotoCount] = useState(0)
+
+  // 顏色選擇
+  const [chooseColor, setChooseColor] = useState('#fff')
 
   const drawPoint = useCallback(() => {
     ctx.beginPath()
@@ -127,7 +121,7 @@ function PaintTool() {
 
   const drawShape = useCallback(() => {
     storyShapeAry.forEach((cur, index) => {
-      ctx.strokeStyle = ((index + 1) === storyShapeAry.length) ? '#f00': '#fff'
+      ctx.strokeStyle = cur.color
       if (cur.type === 'rect') ctx.strokeRect(cur.x, cur.y, cur.width, cur.height)
       if (cur.type === 'line') {
         ctx.beginPath()
@@ -149,7 +143,7 @@ function PaintTool() {
   const drawPen = useCallback(() => {
     ctx.beginPath()
     storyPenAry.forEach((cur, index) => {
-      ctx.fillStyle = '#fff'
+      ctx.fillStyle = cur.color
       ctx.beginPath()
       ctx.arc(cur.x, cur.y, 5, 0, 2 * Math.PI)
       ctx.fill()
@@ -232,6 +226,7 @@ function PaintTool() {
             y: evt.y,
             finalX: evt.x + 3,
             finalY: evt.y + 3,
+            color: chooseColor,
           }
           return prev
         })
@@ -245,6 +240,7 @@ function PaintTool() {
             y: evt.y,
             width: 10,
             height: 10,
+            color: chooseColor,
           }
           return prev
         })
@@ -259,6 +255,7 @@ function PaintTool() {
             r: 10,
             getXDir: true,
             getYDir: true,
+            color: chooseColor,
           }
           return prev
         })
@@ -279,12 +276,13 @@ function PaintTool() {
         })
       }
       // 繪筆
-      if (useTool[penIndex]) {
+      if (useTool[penIndex] && !useTool[eraserIndex]) {
+        // console.log('useTool[eraserIndex]',useTool[eraserIndex])
         setStoryPenAry((prev) => {
           prev.push({
             x: evt.x,
             y: evt.y,
-            // color: 10,
+            color: chooseColor,
             // getXDir: true,
             // getYDir: true,
           })
@@ -299,10 +297,26 @@ function PaintTool() {
         })
         // setStoryPenCount(prev => prev + 1)
       }
+      // 橡皮擦
+      if (useTool[eraserIndex]) {
+        setStoryPenAry((prev, index) => {
+          const ary = prev.filter((cur) => {
+            return !((cur.x <=  evt.x) && (cur.x >=  evt.x) && (cur.y >=  evt.y) && (cur.y >=  evt.y))
+          })
+          // ary.forEach((cur, index2) => {
+          //   if ((cur.x <=  evt.x) && (cur.x >=  evt.x) && (cur.y >=  evt.y) && (cur.y >=  evt.y)) {
+          //     prev.splice(index2, 1)
+          //   }
+          // })
+          
+   
+          return ary
+        })
+      }
       
     }
     paint()
-  }, [useTool, isMouseDown.current, createRectIndex, storyShapeCount, paint])
+  }, [useTool, isMouseDown.current, createRectIndex, storyShapeCount, paint, chooseColor])
 
   const onMousemove = useCallback((evt) => {
     if (isMouseDown.current) {
@@ -314,6 +328,7 @@ function PaintTool() {
             y: prev[storyShapeCount].y,
             width: evt.x - prev[storyShapeCount].x,
             height: evt.y - prev[storyShapeCount].y,
+            color: chooseColor,
           }
           return prev
         })
@@ -328,6 +343,7 @@ function PaintTool() {
             r: getR,
             getXDir: (evt.x - prev[storyShapeCount].x) > 0,
             getYDir: (evt.y - prev[storyShapeCount].y) > 0,
+            color: chooseColor,
           }
           return prev
         })
@@ -340,6 +356,7 @@ function PaintTool() {
             y: prev[storyShapeCount].y,
             finalX: evt.x,
             finalY: evt.y,
+            color: chooseColor,
           }
           return prev
         })
@@ -351,11 +368,12 @@ function PaintTool() {
           return prev
         })
       }
-      if (useTool[penIndex]) {
+      if (useTool[penIndex] && !useTool[eraserIndex]) {
         setStoryPenAry((prev) => {
           prev.push({
             x: evt.x,
             y: evt.y,
+            color: chooseColor,
             // color: 10,
             // getXDir: true,
             // getYDir: true,
@@ -371,9 +389,23 @@ function PaintTool() {
         })
         // setStoryPenCount(prev => prev + 1)
       }
+      // 橡皮擦
+      if (useTool[eraserIndex]) {
+        setStoryPenAry((prev, index) => {
+          const ary = [...prev]
+          ary.forEach((cur, index2) => {
+            if ((cur.x <=  evt.x) && (cur.x >=  evt.x) && (cur.y >=  evt.y) && (cur.y >=  evt.y)) {
+              prev.splice(index2, 1)
+            }
+          })
+          
+   
+          return prev
+        })
+      }
     }
     paint()
-  }, [isMouseDown.current, storyShapeCount, setStoryShapeAry, useTool, chooseImgIndex.current, paint])
+  }, [isMouseDown.current, storyShapeCount, setStoryShapeAry, useTool, chooseImgIndex.current, paint, chooseColor])
 
   const onMouseup = useCallback((evt) => {
     if (isMouseDown.current && useTool[shapeIndex]) {
@@ -387,6 +419,7 @@ function PaintTool() {
             y: prev[storyShapeCount].y,
             width: (Math.abs(getWidth) > 10) ? getWidth : 10,
             height: (Math.abs(getHeight) > 10) ? getHeight : 10,
+            color: chooseColor,
           }
           return prev
         })
@@ -401,6 +434,7 @@ function PaintTool() {
             r: (getR > 10) ? getR : 10,
             getXDir: (evt.x - prev[storyShapeCount].x) > 0,
             getYDir: (evt.y - prev[storyShapeCount].y) > 0,
+            color: chooseColor,
           }
           return prev
         })
@@ -413,6 +447,7 @@ function PaintTool() {
             y: prev[storyShapeCount].y,
             finalX: evt.x,
             finalY: evt.y,
+            color: chooseColor,
           }
           return prev
         })
@@ -421,7 +456,7 @@ function PaintTool() {
     }
     isMouseDown.current = false
     paint()
-  }, [useTool, createRectIndex, isMouseDown.current, storyShapeCount, paint])
+  }, [useTool, createRectIndex, isMouseDown.current, storyShapeCount, paint, chooseColor])
 
   const onMousewheel = useCallback((evt) => {
     if (useTool[editPhotoIndex] && chooseImgIndex.current !== null) {
@@ -597,6 +632,21 @@ function PaintTool() {
     }
   }, [useTool, setting, setSetting, onCancel])
 
+  const handleColorClick = (event) => {
+    setAnchorColorEl(event.currentTarget)
+    setOpenColorPick(true)
+  }
+
+  const handleColorClose = useCallback(() => {
+    setAnchorColorEl(null)
+    setOpenColorPick(false)
+  }, [])
+
+  const onClickColor = useCallback((color) => {
+    setChooseColor(color)
+    handleColorClose()
+  }, [])
+
   useEffect(() => {
     closeDialogs()
   }, [])
@@ -608,17 +658,17 @@ function PaintTool() {
         <div className={styles.tool}>
           <Tooltip title={titlesList.pen} placement="right">
             <IconButton size="medium" onClick={() => onHandleClick(penIndex)} className={clsx(useTool[penIndex] && styles.use)}>
-              <DrawIcon />
+              <Draw />
             </IconButton >
           </Tooltip>
           <Collapse in={useTool[penIndex]}>  
             <MenuList>
-              <MenuItem onClick={() => onPrevious(setStoryPointAry, setStoryPointCount, storyPointCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
-                <p className={styles.btnText}>{'上一步'}</p>
+              <MenuItem onClick={() => onCreateBtn(penIndex, eraserIndex)} className={clsx(styles.toolBtn, useTool[eraserIndex] && styles.useCreate)}>
+                <CleaningServices fontSize="small" />
+                <p className={styles.btnText}>{'橡皮擦'}</p>
               </MenuItem>
               <MenuItem onClick={() => onOpenCode('pen', storyPointAry)} className={styles.toolBtn}>
-                <CodeIcon fontSize="small" />
+                <Code fontSize="small" />
                 <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
@@ -628,17 +678,17 @@ function PaintTool() {
         <div className={styles.tool}>
           <Tooltip title={titlesList.point} placement="right">
             <IconButton size="medium" onClick={() => onHandleClick(pointIndex)} className={clsx(useTool[pointIndex] && styles.use)}>
-              <LinearScaleIcon />
+              <LinearScale />
             </IconButton >
           </Tooltip>
           <Collapse in={useTool[pointIndex]}>  
             <MenuList>
               <MenuItem onClick={() => onPrevious(setStoryPointAry, setStoryPointCount, storyPointCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
+                <CallMissed fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
               <MenuItem onClick={() => onOpenCode('point', storyPointAry)} className={styles.toolBtn}>
-                <CodeIcon fontSize="small" />
+                <Code fontSize="small" />
                 <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
@@ -648,30 +698,30 @@ function PaintTool() {
         <div className={styles.tool}>
           <Tooltip title={titlesList.shape} placement="right">
             <IconButton size="medium" onClick={() => onHandleClick(shapeIndex)} className={clsx(useTool[shapeIndex] && styles.use)}>
-              <InterestsIcon />
+              <Interests />
             </IconButton >
           </Tooltip>
           <Collapse in={useTool[shapeIndex]}>  
             <MenuList>
               <MenuItem onClick={() => onCreateBtn(shapeIndex, createLineIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
-                <HorizontalRuleIcon fontSize="small" />
+                <HorizontalRule fontSize="small" />
                 <p className={styles.btnText}>{'製作直線'}</p>
               </MenuItem>
               <MenuItem onClick={() => onCreateBtn(shapeIndex, createRectIndex)} className={clsx(styles.toolBtn, useTool[createRectIndex] && styles.useCreate)}>
-                <CropSquareIcon fontSize="small" />
+                <CropSquare fontSize="small" />
                 <p className={styles.btnText}>{'製作矩形'}</p>
               </MenuItem>
               <MenuItem onClick={() => onCreateBtn(shapeIndex, createCircleIndex)} className={clsx(styles.toolBtn, useTool[createCircleIndex] && styles.useCreate)}>
-                <PanoramaFishEyeIcon fontSize="small" />
+                <PanoramaFishEye fontSize="small" />
                 <p className={styles.btnText}>{'製作圓形'}</p>
               </MenuItem>
               <Divider />
               <MenuItem onClick={() => onPrevious(setStoryShapeAry, setStoryShapeCount, storyShapeCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
+                <CallMissed fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
               <MenuItem onClick={() => onOpenCode('shape', storyShapeAry)} className={styles.toolBtn}>
-                <CodeIcon fontSize="small" />
+                <Code fontSize="small" />
                 <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
@@ -681,26 +731,26 @@ function PaintTool() {
         <div className={styles.tool}>
           <Tooltip title={titlesList.text} placement="right">
             <IconButton size="medium" onClick={() => onHandleClick(textIndex)} className={clsx(useTool[textIndex] && styles.use)}>
-              <TitleIcon />
+              <Title />
             </IconButton >
           </Tooltip>
           <Collapse in={useTool[textIndex]}>  
             <MenuList>
               <MenuItem onClick={() => onCreateBtn(textIndex, textSizeIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
-                <FormatSizeIcon fontSize="small" />
+                <FormatSize fontSize="small" />
                 <p className={styles.btnText}>{'文字大小'}</p>
               </MenuItem>
               <MenuItem onClick={() => onCreateBtn(textIndex, textColorIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
-                <ColorLensIcon fontSize="small" />
+                <ColorLens fontSize="small" />
                 <p className={styles.btnText}>{'文字顏色'}</p>
               </MenuItem>
               <Divider />
               <MenuItem onClick={() => onPrevious(setStoryShapeAry, setStoryShapeCount, storyShapeCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
+                <CallMissed fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
               <MenuItem onClick={() => onOpenCode('text', storyTextAry)} className={styles.toolBtn}>
-                <CodeIcon fontSize="small" />
+                <Code fontSize="small" />
                 <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
@@ -710,26 +760,26 @@ function PaintTool() {
         <div className={styles.tool}>
           <Tooltip title={titlesList.photo} placement="right">
             <IconButton size="medium" onClick={() => onHandleClick(photoIndex)} className={clsx(useTool[photoIndex] && styles.use)}>
-              <InsertPhotoIcon />
+              <InsertPhoto />
             </IconButton >
           </Tooltip>
           <Collapse in={useTool[photoIndex]}>  
             <MenuList>
               <MenuItem onClick={() => onCreateBtn(photoIndex, addPhotoIndex)} className={clsx(styles.toolBtn, useTool[addPhotoIndex] && styles.useCreate)}>
-                <AddPhotoAlternateIcon fontSize="small" />
+                <AddPhotoAlternate fontSize="small" />
                 <p className={styles.btnText}>{'新增圖片'}</p>
               </MenuItem>
               <MenuItem onClick={() => onCreateBtn(photoIndex, editPhotoIndex)} className={clsx(styles.toolBtn, useTool[editPhotoIndex] && styles.useCreate)}>
-                <CropIcon fontSize="small" />
+                <Crop fontSize="small" />
                 <p className={styles.btnText}>{'編輯圖片'}</p>
               </MenuItem>
               <Divider />
               <MenuItem onClick={() => onPrevious(setStoryPhotoAry, setStoryPhotoCount, storyPhotoCount)} className={styles.toolBtn}>
-                <CallMissedIcon fontSize="small" />
+                <CallMissed fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
               <MenuItem onClick={() => onOpenCode('photo', storyPhotoAry)} className={styles.toolBtn}>
-                <CodeIcon fontSize="small" />
+                <Code fontSize="small" />
                 <p className={styles.btnText}>{'轉成程式碼'}</p>
               </MenuItem>
               <Divider />
@@ -737,16 +787,35 @@ function PaintTool() {
           </Collapse>
         </div>
         <div className={styles.tool}>
+          <Tooltip title={'顏色選擇'} placement="right">
+            <IconButton size="medium"onClick={handleColorClick} sx={{backgroundColor: `${chooseColor} !important` }} className={styles.chooseColor}>
+              <ColorLens />
+            </IconButton >
+          </Tooltip>
+          <Popper open={openColorPick} anchorEl={anchorColorEl} disablePortal>
+            <ClickAwayListener onClickAway={handleColorClose}>
+              <MenuList
+                className={styles.colorPicker}
+                sx={{display: 'flex'}}
+              >
+                {colorList.map(cur => (
+                  <MenuItem key={cur} style={{background: cur}} onClick={() => onClickColor(cur)} className={styles.pickerColor} />
+                ))}
+              </MenuList>
+            </ClickAwayListener>
+          </Popper>
+        </div>   
+        <div className={styles.tool}>
           <Tooltip title={'清除畫布'} placement="right">
             <IconButton size="medium"onClick={onResetCanvas} className={clsx(useTool[settingIndex] && styles.use)}>
-              <HighlightOffIcon />
+              <HighlightOff />
             </IconButton >
           </Tooltip>
         </div>    
         <div className={styles.tool}>
           <Tooltip title={'設定'} placement="right">
             <IconButton size="medium"onClick={() => onHandleClick(settingIndex)} className={clsx(useTool[settingIndex] && styles.use)}>
-              <SettingsIcon />
+              <Settings />
             </IconButton >
           </Tooltip>
         </div>
