@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/React-Festival-Canvas/static/css/main.fac31a16.css",
-    "main.js": "/React-Festival-Canvas/static/js/main.440bd4d8.js",
+    "main.css": "/React-Festival-Canvas/static/css/main.959fcce9.css",
+    "main.js": "/React-Festival-Canvas/static/js/main.7a78e78e.js",
     "static/js/787.d4aba7ab.chunk.js": "/React-Festival-Canvas/static/js/787.d4aba7ab.chunk.js",
     "static/media/bg.jpg": "/React-Festival-Canvas/static/media/bg.7f4af5ea2ed646ef8525.jpg",
     "static/media/tree1.svg": "/React-Festival-Canvas/static/media/tree1.80a76f44a16b287d4952a78482d32985.svg",
     "static/media/noImage.jpg": "/React-Festival-Canvas/static/media/noImage.2efe78cdf6dbf909f571.jpg",
     "index.html": "/React-Festival-Canvas/index.html",
-    "main.fac31a16.css.map": "/React-Festival-Canvas/static/css/main.fac31a16.css.map",
-    "main.440bd4d8.js.map": "/React-Festival-Canvas/static/js/main.440bd4d8.js.map",
+    "main.959fcce9.css.map": "/React-Festival-Canvas/static/css/main.959fcce9.css.map",
+    "main.7a78e78e.js.map": "/React-Festival-Canvas/static/js/main.7a78e78e.js.map",
     "787.d4aba7ab.chunk.js.map": "/React-Festival-Canvas/static/js/787.d4aba7ab.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.fac31a16.css",
-    "static/js/main.440bd4d8.js"
+    "static/css/main.959fcce9.css",
+    "static/js/main.7a78e78e.js"
   ]
 }
