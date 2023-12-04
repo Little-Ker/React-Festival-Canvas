@@ -6,7 +6,6 @@ import {
 const useDialogStackContext = create(set => ({
   popDialogs: [],
   openAlert: (props) => {
-    console.log('QQ')
     const id = uuid()
     const type = 'ALERT'
     const { title, content, handlers } = props

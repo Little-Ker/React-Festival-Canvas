@@ -9,6 +9,7 @@ import rgbHex from 'rgb-hex'
 import {
   Popper, ClickAwayListener, Collapse, Tooltip, IconButton, MenuList, MenuItem, Divider
 } from '@mui/material'
+import Slider from '@mui/material/Slider'
 import {
   LinearScale, Code, HighlightOff, Settings, Interests, CallMissed, HorizontalRule, FormatSize, 
   Draw, Title, CropSquare, PanoramaFishEye, ColorLens, InsertPhoto, AddPhotoAlternate, CleaningServices,
@@ -31,12 +32,11 @@ const createRectIndex = 5
 const createCircleIndex = 6
 const textIndex = 7
 const textSizeIndex = 8
-const textColorIndex = 9
-const photoIndex = 10
-const addPhotoIndex = 11
-const editPhotoIndex = 12
+const photoIndex = 9
+const addPhotoIndex = 10
+const editPhotoIndex = 11
 
-const settingIndex = 13
+const settingIndex = 12
 
 const titlesList = {
   pen: '繪筆',
@@ -49,8 +49,23 @@ const titlesList = {
 function PaintTool() {
   const [canvas, setCanvas] = useState(null)
   const [ctx, setCtx] = useState(null)
+
+  // 顏色選擇
   const [anchorColorEl, setAnchorColorEl] = useState(null)
   const [openColorPick, setOpenColorPick] = useState(false)
+  const [chooseColor, setChooseColor] = useState('#fff')
+
+  // 字體大小
+  const [anchorFontSizeEl, setAnchorFontSizeEl] = useState(null)
+  const [openFontSize, setOpenFontSize] = useState(false)
+  const [fontSize, setFontSize] = useState(30)
+
+  const inputRef = useRef(null)
+  const isInputText = useRef(false)
+  const [storyMousePos, setStoryMousePos] = useState({
+    x: 0,
+    y: 0,
+  })
 
   const defaultUseToolAry = useMemo(() => [...Array(settingIndex).keys()].map(() => false), [])
   const [useTool, setUseTool] = useState(defaultUseToolAry)
@@ -61,8 +76,6 @@ function PaintTool() {
   })
 
   const zoom = [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
-
-  const colorList = ['#f0f0f0', '#ff2222de', '#21b34d', '#0077ff', '#ffff2c', '#b22dff', '#00ccff', '#202020']
 
   const isMouseDown = useRef(false)
   const chooseImgIndex = useRef(null)
@@ -86,9 +99,6 @@ function PaintTool() {
   // 圖片工具
   const [storyPhotoAry, setStoryPhotoAry] = useState([])
   const [storyPhotoCount, setStoryPhotoCount] = useState(0)
-
-  // 顏色選擇
-  const [chooseColor, setChooseColor] = useState('#fff')
 
   const drawPoint = useCallback(() => {
     ctx.beginPath()
@@ -167,6 +177,14 @@ function PaintTool() {
     })
   }, [ctx, storyPhotoAry, chooseImgIndex, useTool, editPhotoIndex, storyPhotoCount])
 
+  const drawText = useCallback(() => {
+    storyTextAry.forEach((cur) => {
+      ctx.font = `${cur.size}px Arial`
+      ctx.fillStyle = cur.color
+      ctx.fillText(cur.text, cur.x, cur.y)
+    })
+  }, [ctx, storyTextAry])
+
   const paint = useCallback(() => {
     let ww = window.innerWidth - 3
     let wh = window.innerHeight - 3
@@ -191,7 +209,10 @@ function PaintTool() {
 
     // 圖片效果
     drawPhoto()
-  }, [drawPoint, drawShape, drawPen, drawPhoto])
+
+    // 文字效果
+    drawText()
+  }, [drawPoint, drawShape, drawPen, drawPhoto, drawText])
 
   const resizeCanvas = useCallback(() => {
     let ww = window.innerWidth - 3
@@ -206,6 +227,35 @@ function PaintTool() {
     if (!canvas) return 
     resizeCanvas()
   })
+
+  const handleTextEnter = useCallback((event,value, point) => {
+    const keyCode = event?.keyCode
+    if ((event && keyCode !== 13) || (event && keyCode === 13 && value === '')) return
+    setStoryTextAry((prev) => {
+      prev.push({
+        x: point.x + 0,
+        y: point.y + fontSize - (fontSize / 4),
+        text: value,
+        size: fontSize,
+        color: chooseColor,
+      })
+      return prev
+    })
+    setStoryTextCount(prev => prev + 1)
+    inputRef.current.value = ''
+    isInputText.current = false
+    inputRef.current.style.display = 'none'
+    paint()
+  }, [chooseColor, fontSize, paint, inputRef, isInputText])
+
+  const addTextInput = useCallback((point) => {
+    inputRef.current.style.display = 'block'
+    inputRef.current.style.color = chooseColor
+    inputRef.current.style.left = `${point.x - 15}px`
+    inputRef.current.style.top = `${point.y - 20}px`
+    inputRef.current.style.fontSize = `${fontSize}px`
+    inputRef.current.onkeydown = event => handleTextEnter(event, inputRef.current.value, point)
+  }, [fontSize, chooseColor, handleTextEnter, inputRef])
 
   const onMouseDown = useCallback((evt) => {
     // 鋼筆工具
@@ -312,15 +362,26 @@ function PaintTool() {
           //     prev.splice(index2, 1)
           //   }
           // })
-          
-   
           return ary
         })
       }
-      
+      // 文字
+      if (useTool[textIndex]) {
+        if (!isInputText.current) {
+          addTextInput(evt)
+          isInputText.current = true
+          setStoryMousePos((prev) => {
+            prev.x = evt.x
+            prev.y = evt.y
+            return prev
+          })
+        } else if (isInputText.current && inputRef.current.value !== '') {
+          handleTextEnter(null, inputRef.current.value, storyMousePos)
+        }
+      }
     }
     paint()
-  }, [useTool, isMouseDown.current, createRectIndex, storyShapeCount, paint, chooseColor])
+  }, [useTool, isMouseDown.current, createRectIndex, storyShapeCount, paint, chooseColor, inputRef, storyMousePos])
 
   const onMousemove = useCallback((evt) => {
     if (isMouseDown.current) {
@@ -636,19 +697,25 @@ function PaintTool() {
     }
   }, [useTool, setting, setSetting, onCancel])
 
-  const handleColorClick = (event) => {
+  const handleColorClick = useCallback((event) => {
     setAnchorColorEl(event.currentTarget)
     setOpenColorPick(true)
-  }
+  }, [])
+
+  const handleFontSizeClick = useCallback((event) => {
+    setAnchorFontSizeEl(event.currentTarget)
+    setOpenFontSize(true)
+    onCreateBtn(textIndex, textSizeIndex)
+  }, [textIndex, textSizeIndex])
 
   const handleColorClose = useCallback(() => {
     setAnchorColorEl(null)
     setOpenColorPick(false)
   }, [])
 
-  const onClickColor = useCallback((color) => {
-    setChooseColor(color)
-    handleColorClose()
+  const handleFontSizeClose = useCallback(() => {
+    setAnchorFontSizeEl(null)
+    setOpenFontSize(false)
   }, [])
 
   useEffect(() => {
@@ -740,16 +807,26 @@ function PaintTool() {
           </Tooltip>
           <Collapse in={useTool[textIndex]}>  
             <MenuList>
-              <MenuItem onClick={() => onCreateBtn(textIndex, textSizeIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
+              <MenuItem onClick={handleFontSizeClick} className={clsx(styles.toolBtn, useTool[textSizeIndex] && styles.useCreate)}>
                 <FormatSize fontSize="small" />
                 <p className={styles.btnText}>{'文字大小'}</p>
-              </MenuItem>
-              <MenuItem onClick={() => onCreateBtn(textIndex, textColorIndex)} className={clsx(styles.toolBtn, useTool[createLineIndex] && styles.useCreate)}>
-                <ColorLens fontSize="small" />
-                <p className={styles.btnText}>{'文字顏色'}</p>
+                <Popper open={openFontSize} anchorEl={anchorFontSizeEl} disablePortal>
+                  <ClickAwayListener onClickAway={handleFontSizeClose}>
+                    <div className={styles.fontSizePicker}>
+                      <Slider
+                        value={fontSize}
+                        onChange={(e, n) => setFontSize(n)}
+                        valueLabelDisplay="auto"
+                        min={20}
+                        max={100}
+                      />
+                      <p className={styles.fontSize}>{fontSize}</p>
+                    </div>
+                  </ClickAwayListener>
+                </Popper>
               </MenuItem>
               <Divider />
-              <MenuItem onClick={() => onPrevious(setStoryShapeAry, setStoryShapeCount, storyShapeCount)} className={styles.toolBtn}>
+              <MenuItem onClick={() => onPrevious(setStoryTextAry, setStoryTextCount, storyTextCount)} className={styles.toolBtn}>
                 <CallMissed fontSize="small" />
                 <p className={styles.btnText}>{'上一步'}</p>
               </MenuItem>
@@ -792,7 +869,7 @@ function PaintTool() {
         </div>
         <div className={styles.tool}>
           <Tooltip title={'顏色選擇'} placement="right">
-            <IconButton size="medium"onClick={handleColorClick} sx={{backgroundColor: `${chooseColor} !important` }} className={styles.chooseColor}>
+            <IconButton size="medium" onClick={handleColorClick} sx={{backgroundColor: `${chooseColor} !important` }} className={styles.chooseColor}>
               <ColorLens />
             </IconButton >
           </Tooltip>
@@ -815,10 +892,11 @@ function PaintTool() {
           <Tooltip title={'設定'} placement="right">
             <IconButton size="medium"onClick={() => onHandleClick(settingIndex)} className={clsx(useTool[settingIndex] && styles.use)}>
               <Settings />
-            </IconButton >
+            </IconButton>
           </Tooltip>
         </div>
       </div>
+      <input type="text" ref={inputRef} className={styles.input} />
     </div>
   )
 }

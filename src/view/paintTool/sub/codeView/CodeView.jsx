@@ -79,6 +79,18 @@ function CodeView(props) {
           </div>
         </div>
       )}
+      {(type === 'text') && (
+        <div className={styles.codeList}>
+          {codeAry.map((cur, index) => (
+            <div key={index}>
+              {console.log('codeAry',codeAry)}
+              <p>{`ctx.font = "${cur.size}px Arial"`}</p>
+              <p>{`ctx.fillStyle = ${cur.color}`}</p>
+              <p>{`ctx.fillText(${cur.text}, ${cur.x}, ${cur.y})`}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </Box>
   )
 }
