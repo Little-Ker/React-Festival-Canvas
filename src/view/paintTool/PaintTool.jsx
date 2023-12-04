@@ -13,7 +13,7 @@ import Slider from '@mui/material/Slider'
 import {
   LinearScale, Code, HighlightOff, Settings, Interests, CallMissed, HorizontalRule, FormatSize, 
   Draw, Title, CropSquare, PanoramaFishEye, ColorLens, InsertPhoto, AddPhotoAlternate, CleaningServices,
-  Crop
+  Crop, SaveAlt
 } from '@mui/icons-material'
 import {
   openAlert, openConfirm, closeDialogs, openForm
@@ -718,6 +718,17 @@ function PaintTool() {
     setOpenFontSize(false)
   }, [])
 
+  const onDownloadCanvas = useCallback(() => {
+    const canvas = document.querySelector('#myCanvas')
+
+    const el = document.createElement('a')
+    el.href = canvas.toDataURL()
+    el.download = 'image'
+  
+    const event = new MouseEvent('click')
+    el.dispatchEvent(event)
+  }, [])
+
   useEffect(() => {
     closeDialogs()
   }, [])
@@ -880,11 +891,18 @@ function PaintTool() {
               </div>
             </ClickAwayListener>
           </Popper>
-        </div>   
+        </div>
         <div className={styles.tool}>
           <Tooltip title={'清除畫布'} placement="right">
             <IconButton size="medium"onClick={onResetCanvas} className={clsx(useTool[settingIndex] && styles.use)}>
               <HighlightOff />
+            </IconButton >
+          </Tooltip>
+        </div>   
+        <div className={styles.tool}>
+          <Tooltip title={'畫布下載'} placement="right">
+            <IconButton size="medium" onClick={onDownloadCanvas} className={clsx(useTool[settingIndex] && styles.use)}>
+              <SaveAlt />
             </IconButton >
           </Tooltip>
         </div>    
