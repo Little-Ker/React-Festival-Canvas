@@ -13,7 +13,9 @@ const linkList = [{
 {name: 'canvas 小工具',
   to: '/paintTool'},
 {name: '雪景',
-  to: '/snowView'}]
+  to: '/snowView'},
+{name: 'Lottie',
+  to: 'lottie'}]
 
 export default function Navbar() {
   const location = useLocation()

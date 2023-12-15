@@ -4,10 +4,11 @@ import {
 } from 'react-router-dom'
 import './App.css'
 import Navbar from 'component/navbar/Navbar'
+import Dialog from 'component/dialog'
 import ViewA from 'view/ViewA'
 import ViewB from 'view/ViewB'
 import PaintTool from 'view/paintTool'
-import Dialog from 'component/dialog'
+import Lottie from 'view/lottie'
  
 const RouterPage = () => {
   return (
@@ -16,6 +17,7 @@ const RouterPage = () => {
       <Route exact path="viewA" element={<ViewA/>} />
       <Route exact path="viewB" element={<ViewB/>} />
       <Route exact path="paintTool" element={<PaintTool/>} />
+      <Route exact path="lottie" element={<Lottie/>} />
       <Route path="*" element={<ViewA/>} />
     </Routes>
   )
