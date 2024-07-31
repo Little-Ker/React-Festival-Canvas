@@ -7,6 +7,7 @@ import Navbar from 'component/navbar/Navbar'
 import Dialog from 'component/dialog'
 import ViewA from 'view/ViewA'
 import ViewB from 'view/ViewB'
+import SnowView from 'view/snowView'
 import PaintTool from 'view/paintTool'
 import Lottie from 'view/lottie'
  
@@ -16,6 +17,7 @@ const RouterPage = () => {
       <Route exact path="/" element={<ViewA/>} />
       <Route exact path="viewA" element={<ViewA/>} />
       <Route exact path="viewB" element={<ViewB/>} />
+      <Route exact path="snowView" element={<SnowView/>} />
       <Route exact path="paintTool" element={<PaintTool/>} />
       <Route exact path="lottie" element={<Lottie/>} />
       <Route path="*" element={<ViewA/>} />
