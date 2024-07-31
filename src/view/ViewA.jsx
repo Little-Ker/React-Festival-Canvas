@@ -1,5 +1,5 @@
 import React, {
-  useEffect 
+  useEffect, useRef
 } from 'react'
 import axios from 'axios'
 import {
@@ -41,11 +41,12 @@ const AxiosEx = () => {
 }
 
 const ViewA = () => {
+
   return (
     <>
-      <h1>ViewA</h1>
       <AxiosEx />
       <ReduxEX />
+      <iframe style={{border: '1px solid rgba(0, 0, 0, 0.1)'}} width="600" height="550" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FHC9EAVXqGHy8DqYbE6z7X3%2Ftest%3Fpage-id%3D0%253A1%26type%3Ddesign%26node-id%3D705-467%26viewport%3D999%252C3806%252C0.09%26t%3DhB9RFmRp9pDMusfj-1%26scaling%3Dscale-down%26starting-point-node-id%3D695%253A516%26show-proto-sidebar%3D1%26mode%3Ddesign" allowfullscreen></iframe>
     </>
   )
 }
